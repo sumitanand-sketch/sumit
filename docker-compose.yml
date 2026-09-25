@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  vault-gateway:
+    build: .
+    container_name: vault-cluster
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - vault-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/cluster/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  vault-data:
+    driver: local
