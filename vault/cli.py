@@ -180,20 +180,24 @@ def run_standalone_server(port: int = 8000, node_count: int = 3):
     import uvicorn
     from vault.cluster.builder import VaultCluster
 
-    async def _setup_app():
+    async def _start():
         cluster = VaultCluster(node_count=node_count, use_in_memory_asgi=True)
         await cluster.initialize()
-        return cluster.gateway_app
+        console.print(Panel(
+            f"[bold green]Vault Distributed Object Storage Cluster Started![/bold green]\n"
+            f"Storage Nodes: [cyan]{node_count}[/cyan]\n"
+            f"Gateway API & Web Dashboard: [bold cyan]http://127.0.0.1:{port}/dashboard[/bold cyan]\n"
+            f"S3 REST API Endpoint: [bold cyan]http://127.0.0.1:{port}[/bold cyan]",
+            title="Vault Server Ready"
+        ))
+        config = uvicorn.Config(cluster.gateway_app, host="127.0.0.1", port=port, log_level="info")
+        server = uvicorn.Server(config)
+        await server.serve()
 
-    app = asyncio.run(_setup_app())
-    console.print(Panel(
-        f"[bold green]Vault Distributed Object Storage Cluster Started![/bold green]\n"
-        f"Storage Nodes: [cyan]{node_count}[/cyan]\n"
-        f"Gateway API & Web Dashboard: [bold cyan]http://127.0.0.1:{port}/dashboard[/bold cyan]\n"
-        f"S3 REST API Endpoint: [bold cyan]http://127.0.0.1:{port}[/bold cyan]",
-        title="Vault Server Ready"
-    ))
-    uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")
+    try:
+        asyncio.run(_start())
+    except KeyboardInterrupt:
+        console.print("[yellow]Server stopped by user.[/yellow]")
 
 
 if __name__ == "__main__":
