@@ -9,14 +9,14 @@ Vault is an enterprise-grade distributed object storage system designed to relia
 
 ---
 
-### 🌐 Live Public Deployments (3 Dedicated Instances)
+### 🌐 Dedicated Repositories & Live Deployments (3 Separate Instances)
 
-| Deployment | Direct Link | Cluster Topology | Dedicated Role |
-|---|---|---|---|
-| **Person 1 Deployment** | 👉 **[https://sumitanand-sketch.github.io/sumit/person1/](https://sumitanand-sketch.github.io/sumit/person1/)** | Cluster Alpha (`US-East / EU-Central`) | Primary Ops & Engineering |
-| **Person 2 Deployment** | 👉 **[https://sumitanand-sketch.github.io/sumit/person2/](https://sumitanand-sketch.github.io/sumit/person2/)** | Cluster Beta (`AP-South / US-West`) | Data Science & Analytics |
-| **Person 3 Deployment** | 👉 **[https://sumitanand-sketch.github.io/sumit/person3/](https://sumitanand-sketch.github.io/sumit/person3/)** | Cluster Gamma (`EU-West / AP-East`) | Security & Compliance Audit |
-| **Master Switchboard** | 👉 **[https://sumitanand-sketch.github.io/sumit/](https://sumitanand-sketch.github.io/sumit/)** | Global Master Hub | Multi-User Portal |
+| Person / Instance | Dedicated GitHub Repository | Live Web Application Link | Cluster Topology & Region | Storage Namespace |
+|---|---|---|---|---|
+| **Person 1** (`Cluster Alpha`) | 📦 [**sumitanand-sketch/vault-person1**](https://github.com/sumitanand-sketch/vault-person1) | 🚀 [**vault-person1 Live Console**](https://sumitanand-sketch.github.io/vault-person1/) | 3 Nodes (`US-East / EU-Central`) | `user-person1` (50 GB) |
+| **Person 2** (`Cluster Beta`) | 📦 [**sumitanand-sketch/vault-person2**](https://github.com/sumitanand-sketch/vault-person2) | 🚀 [**vault-person2 Live Console**](https://sumitanand-sketch.github.io/vault-person2/) | 3 Nodes (`AP-South / US-West`) | `user-person2` (100 GB) |
+| **Person 3** (`Cluster Gamma`) | 📦 [**sumitanand-sketch/vault-person3**](https://github.com/sumitanand-sketch/vault-person3) | 🚀 [**vault-person3 Live Console**](https://sumitanand-sketch.github.io/vault-person3/) | 3 Nodes (`EU-West / AP-East`) | `user-person3` (250 GB) |
+| **Master Hub** | 📦 [**sumitanand-sketch/sumit**](https://github.com/sumitanand-sketch/sumit) | 🌐 [**Central Switchboard**](https://sumitanand-sketch.github.io/sumit/) | Global Multi-Cluster Router | Multi-Tenant Root |
 
 ---
 
