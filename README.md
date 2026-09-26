@@ -9,11 +9,14 @@ Vault is an enterprise-grade distributed object storage system designed to relia
 
 ---
 
-### 🌐 Live Public Deployment
+### 🌐 Live Public Deployments (3 Dedicated Instances)
 
-👉 **[Launch Interactive Vault Web Application](https://sumitanand-sketch.github.io/sumit/)**
-
-Experience the live in-browser distributed cluster visualizer, test S3 reads/writes with SHA-256 chunking, inject physical disk bit-rot, and trigger automatic read repairs and Merkle tree anti-entropy in real time.
+| Deployment | Direct Link | Cluster Topology | Dedicated Role |
+|---|---|---|---|
+| **Person 1 Deployment** | 👉 **[https://sumitanand-sketch.github.io/sumit/person1/](https://sumitanand-sketch.github.io/sumit/person1/)** | Cluster Alpha (`US-East / EU-Central`) | Primary Ops & Engineering |
+| **Person 2 Deployment** | 👉 **[https://sumitanand-sketch.github.io/sumit/person2/](https://sumitanand-sketch.github.io/sumit/person2/)** | Cluster Beta (`AP-South / US-West`) | Data Science & Analytics |
+| **Person 3 Deployment** | 👉 **[https://sumitanand-sketch.github.io/sumit/person3/](https://sumitanand-sketch.github.io/sumit/person3/)** | Cluster Gamma (`EU-West / AP-East`) | Security & Compliance Audit |
+| **Master Switchboard** | 👉 **[https://sumitanand-sketch.github.io/sumit/](https://sumitanand-sketch.github.io/sumit/)** | Global Master Hub | Multi-User Portal |
 
 ---
 
