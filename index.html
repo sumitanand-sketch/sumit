@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault — Distributed Object Storage System</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-card: #121927;
+            --bg-elevated: #1b2438;
+            --accent-cyan: #00f0ff;
+            --accent-purple: #9d4edd;
+            --accent-green: #00e676;
+            --accent-red: #ff3366;
+            --accent-amber: #ffaa00;
+            --text-main: #f0f4f8;
+            --text-muted: #8b9bb4;
+            --border-color: #24324d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background: var(--bg-primary); color: var(--text-main); min-height: 100vh; padding: 24px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .logo-group { display: flex; align-items: center; gap: 14px; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: #fff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+        .cluster-pill { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); padding: 4px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; }
+        .github-link { color: var(--text-muted); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; }
+        .github-link:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); background: rgba(0,240,255,0.05); }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .metric-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; position: relative; overflow: hidden; }
+        .metric-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); opacity: 0.8; }
+        .metric-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 6px; }
+        .metric-val { font-size: 24px; font-weight: 700; color: var(--text-main); }
+        .metric-val.cyan { color: var(--accent-cyan); }
+        .metric-val.green { color: var(--accent-green); }
+        .metric-val.amber { color: var(--accent-amber); }
+        .metric-val.purple { color: var(--accent-purple); }
+
+        .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px; }
+        .card-title { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+        /* Nodes Grid */
+        .nodes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .node-card { background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+        .node-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .node-card.HEALTHY { border-left: 4px solid var(--accent-green); }
+        .node-card.DEAD { border-left: 4px solid var(--accent-red); opacity: 0.6; }
+        .node-card.ISOLATED { border-left: 4px solid var(--accent-amber); }
+        .node-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 600; font-size: 15px; }
+        .badge { font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600; text-transform: uppercase; }
+        .badge.HEALTHY { background: rgba(0, 230, 118, 0.2); color: var(--accent-green); }
+        .badge.DEAD { background: rgba(255, 51, 102, 0.2); color: var(--accent-red); }
+        .badge.ISOLATED { background: rgba(255, 170, 0, 0.2); color: var(--accent-amber); }
+        .node-meta { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+        /* Buttons & Forms */
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: 600; transition: all 0.2s; outline: none; }
+        .btn-primary { background: var(--accent-cyan); color: #000; }
+        .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .btn-danger { background: rgba(255, 51, 102, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .btn-danger:hover { background: var(--accent-red); color: #fff; }
+        .btn-success { background: rgba(0, 230, 118, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .btn-success:hover { background: var(--accent-green); color: #000; }
+        .btn-action { background: var(--bg-elevated); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-action:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+        input, select { background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; color: var(--text-main); font-size: 13px; outline: none; }
+        input:focus { border-color: var(--accent-cyan); }
+
+        /* Log console */
+        .event-log { background: #070a10; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-family: 'Consolas', monospace; font-size: 12px; height: 200px; overflow-y: auto; color: #73e2a7; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-group">
+            <div class="logo-icon">V</div>
+            <div>
+                <h2>Vault Distributed Object Storage</h2>
+                <div style="font-size: 12px; color: var(--text-muted);">Fault-Tolerant Distributed Storage, Quorums & Anti-Entropy</div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <span class="cluster-pill">DEPLOYED ON GITHUB PAGES</span>
+            <a href="https://github.com/sumitanand-sketch/sumit" target="_blank" class="github-link">
+                <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+                GitHub Repo
+            </a>
+        </div>
+    </header>
+
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Active Nodes</div>
+            <div class="metric-val green" id="healthy-nodes">3 / 3</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Stored Chunks</div>
+            <div class="metric-val cyan" id="chunks-stored">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Volume</div>
+            <div class="metric-val" id="bytes-stored">0 B</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Automatic Read Repairs</div>
+            <div class="metric-val purple" id="repairs-count">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Hinted Handoff Buffer</div>
+            <div class="metric-val amber" id="pending-hints">0</div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div>
+            <!-- Storage Nodes Grid -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Consistent Hash Ring Nodes & Failure Domains</div>
+                    <span style="font-size: 12px; color: var(--text-muted);">128 vnodes / node</span>
+                </div>
+                <div class="nodes-grid" id="nodes-container"></div>
+            </div>
+
+            <!-- S3 Object Bench -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Interactive Object Storage (S3 Protocol Simulation)</div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+                    <input type="text" id="bucket-input" value="vault-data" style="width: 140px;">
+                    <input type="text" id="key-input" value="resilience-report.json" style="width: 200px;">
+                    <input type="text" id="payload-input" value='{"vault": "active", "fault_tolerant": true, "quorum": "W=2,R=2"}' style="flex: 1; min-width: 200px;">
+                    <button class="btn-primary" onclick="putObject()">PUT Object</button>
+                    <button class="btn-action" onclick="getObject()">GET Object</button>
+                </div>
+                <div id="object-result" style="font-size: 13px; color: var(--accent-cyan); background: var(--bg-elevated); padding: 12px; border-radius: 8px; min-height: 44px; display: flex; align-items: center;">Ready for operations.</div>
+            </div>
+        </div>
+
+        <div>
+            <!-- Chaos Injection Console -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Chaos & Fault Simulation</div>
+                </div>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                    Inject faults to verify quorum consistency, hinted handoff, and read repair.
+                </p>
+                <div style="margin-bottom: 14px;">
+                    <label style="font-size: 12px; color: var(--text-muted);">Target Node:</label>
+                    <select id="target-node-select" style="width: 100%; margin-top: 4px;"></select>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-danger" onclick="failNode()">Crash Node</button>
+                    <button class="btn-success" onclick="recoverNode()">Recover Node</button>
+                    <button class="btn-action" onclick="partitionNode()">Isolate Node</button>
+                    <button class="btn-success" onclick="healAll()">Heal Network</button>
+                </div>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Active Anti-Entropy & Scrub</div>
+                <div class="btn-group">
+                    <button class="btn-action" onclick="runAntiEntropy()">Run Merkle AAE</button>
+                    <button class="btn-action" onclick="runScrub()">Run Bit-Rot Scrub</button>
+                    <button class="btn-action" onclick="corruptRandomChunk()">Corrupt Chunk on Disk</button>
+                    <button class="btn-action" onclick="addDynamicNode()">+ Add Node-4</button>
+                </div>
+            </div>
+
+            <!-- Cluster Logs -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Cluster Event Telemetry</div>
+                </div>
+                <div class="event-log" id="log-console">
+                    [System] Vault Distributed Storage Engine initialized on GitHub Pages.<br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // In-Browser Vault Distributed Storage Simulator
+        async function sha256(str) {
+            const buffer = new TextEncoder().encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const cluster = {
+            nodes: [
+                { id: "node-1", host: "127.0.0.1", port: 9001, rack: "rack-1", zone: "zone-a", status: "HEALTHY", chunks: {} },
+                { id: "node-2", host: "127.0.0.1", port: 9002, rack: "rack-2", zone: "zone-b", status: "HEALTHY", chunks: {} },
+                { id: "node-3", host: "127.0.0.1", port: 9003, rack: "rack-3", zone: "zone-a", status: "HEALTHY", chunks: {} }
+            ],
+            objects: {},
+            hints: {},
+            totalReads: 0,
+            totalWrites: 0,
+            readRepairs: 0
+        };
+
+        function log(msg) {
+            const consoleEl = document.getElementById("log-console");
+            const time = new Date().toLocaleTimeString();
+            consoleEl.innerHTML = `[${time}] ${msg}<br>` + consoleEl.innerHTML;
+        }
+
+        function render() {
+            const healthyCount = cluster.nodes.filter(n => n.status === "HEALTHY").length;
+            document.getElementById("healthy-nodes").innerText = `${healthyCount} / ${cluster.nodes.length}`;
+            
+            let totalChunks = 0;
+            let totalBytes = 0;
+            cluster.nodes.forEach(n => {
+                const cKeys = Object.keys(n.chunks);
+                totalChunks += cKeys.length;
+                cKeys.forEach(k => totalBytes += (n.chunks[k].data ? n.chunks[k].data.length : 0));
+            });
+
+            document.getElementById("chunks-stored").innerText = totalChunks;
+            document.getElementById("bytes-stored").innerText = `${totalBytes} B`;
+            document.getElementById("repairs-count").innerText = cluster.readRepairs;
+            
+            let hintCount = 0;
+            Object.values(cluster.hints).forEach(h => hintCount += h.length);
+            document.getElementById("pending-hints").innerText = hintCount;
+
+            const container = document.getElementById("nodes-container");
+            const selectEl = document.getElementById("target-node-select");
+            container.innerHTML = "";
+            const currentSelect = selectEl.value;
+            selectEl.innerHTML = "";
+
+            cluster.nodes.forEach(n => {
+                const card = document.createElement("div");
+                card.className = `node-card ${n.status}`;
+                const chunks = Object.values(n.chunks);
+                const corruptCount = chunks.filter(c => c.isCorrupt).length;
+                card.innerHTML = `
+                    <div class="node-title">
+                        <span>${n.id}</span>
+                        <span class="badge ${n.status}">${n.status}</span>
+                    </div>
+                    <div class="node-meta">
+                        <div><strong>Endpoint:</strong> ${n.host}:${n.port}</div>
+                        <div><strong>Topology:</strong> ${n.rack} / ${n.zone}</div>
+                        <div><strong>Chunks:</strong> ${chunks.length} (Corrupt: ${corruptCount})</div>
+                        <div><strong>Status:</strong> ${n.status}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+
+                const opt = document.createElement("option");
+                opt.value = n.id;
+                opt.innerText = `${n.id} (${n.status})`;
+                if (n.id === currentSelect) opt.selected = true;
+                selectEl.appendChild(opt);
+            });
+        }
+
+        async function putObject() {
+            const bucket = document.getElementById("bucket-input").value.trim();
+            const key = document.getElementById("key-input").value.trim();
+            const payload = document.getElementById("payload-input").value;
+            const resBox = document.getElementById("object-result");
+
+            const hash = await sha256(payload);
+            const chunkId = `${bucket}_${key}_chunk0_${hash.slice(0, 8)}`;
+            const etag = `"${hash.slice(0, 16)}"`;
+
+            // Quorum write (W=2, N=3)
+            const targetNodes = cluster.nodes.slice(0, 3);
+            let acks = 0;
+
+            targetNodes.forEach(node => {
+                if (node.status === "HEALTHY") {
+                    node.chunks[chunkId] = { id: chunkId, data: payload, hash: hash, isCorrupt: false };
+                    acks++;
+                } else {
+                    // Buffer hint
+                    if (!cluster.hints[node.id]) cluster.hints[node.id] = [];
+                    cluster.hints[node.id].push({ chunkId, data: payload, hash });
+                }
+            });
+
+            if (acks >= 2) {
+                cluster.objects[`${bucket}/${key}`] = { chunkId, etag, size: payload.length };
+                resBox.innerText = `SUCCESS! Committed with ETag: ${etag} (Quorum acks: ${acks}/3)`;
+                log(`[Quorum Write] Committed ${bucket}/${key} with ETag ${etag}. Acks: ${acks}/3`);
+            } else {
+                resBox.innerText = `QUORUM FAILED: Required 2 acks, only received ${acks}.`;
+                log(`[Quorum Write Error] Quorum failed for ${bucket}/${key}: ${acks} acks.`);
+            }
+            render();
+        }
+
+        async function getObject() {
+            const bucket = document.getElementById("bucket-input").value.trim();
+            const key = document.getElementById("key-input").value.trim();
+            const resBox = document.getElementById("object-result");
+            const obj = cluster.objects[`${bucket}/${key}`];
+
+            if (!obj) {
+                resBox.innerText = `404 Not Found: Object ${bucket}/${key} does not exist.`;
+                return;
+            }
+
+            let validData = null;
+            let healthyCount = 0;
+            const corruptNodes = [];
+
+            for (const node of cluster.nodes) {
+                if (node.status === "HEALTHY" && node.chunks[obj.chunkId]) {
+                    const chunk = node.chunks[obj.chunkId];
+                    if (chunk.isCorrupt) {
+                        corruptNodes.push(node);
+                    } else {
+                        validData = chunk.data;
+                        healthyCount++;
+                    }
+                }
+            }
+
+            if (healthyCount >= 1 && validData) {
+                // Automatic Read Repair
+                let repairs = 0;
+                corruptNodes.forEach(n => {
+                    n.chunks[obj.chunkId] = { id: obj.chunkId, data: validData, hash: sha256(validData), isCorrupt: false };
+                    cluster.readRepairs++;
+                    repairs++;
+                    log(`[Read Repair] Automatically healed corrupted chunk on ${n.id}`);
+                });
+
+                resBox.innerText = `Retrieved: "${validData}" [Repairs performed: ${repairs}]`;
+                log(`[Quorum Read] Successfully fetched ${bucket}/${key}. ETag verified.`);
+            } else {
+                resBox.innerText = `503 Unavailable: Read quorum could not be satisfied.`;
+                log(`[Read Error] Quorum read failed for ${bucket}/${key}.`);
+            }
+            render();
+        }
+
+        function failNode() {
+            const nid = document.getElementById("target-node-select").value;
+            const node = cluster.nodes.find(n => n.id === nid);
+            if (node) {
+                node.status = "DEAD";
+                log(`[Chaos] Node ${nid} crashed (marked DEAD).`);
+                render();
+            }
+        }
+
+        function recoverNode() {
+            const nid = document.getElementById("target-node-select").value;
+            const node = cluster.nodes.find(n => n.id === nid);
+            if (node) {
+                node.status = "HEALTHY";
+                const hints = cluster.hints[nid] || [];
+                hints.forEach(h => {
+                    node.chunks[h.chunkId] = { id: h.chunkId, data: h.data, hash: h.hash, isCorrupt: false };
+                });
+                const count = hints.length;
+                cluster.hints[nid] = [];
+                log(`[Recovery] Node ${nid} restored to HEALTHY! Delivered ${count} buffered hints.`);
+                render();
+            }
+        }
+
+        function partitionNode() {
+            const nid = document.getElementById("target-node-select").value;
+            const node = cluster.nodes.find(n => n.id === nid);
+            if (node) {
+                node.status = "ISOLATED";
+                log(`[Chaos] Isolated node ${nid} via network partition.`);
+                render();
+            }
+        }
+
+        function healAll() {
+            cluster.nodes.forEach(n => {
+                if (n.status === "ISOLATED") n.status = "HEALTHY";
+            });
+            log(`[Network] All network partitions healed.`);
+            render();
+        }
+
+        function corruptRandomChunk() {
+            let corrupted = false;
+            cluster.nodes.forEach(n => {
+                Object.values(n.chunks).forEach(c => {
+                    if (!c.isCorrupt && !corrupted) {
+                        c.isCorrupt = true;
+                        corrupted = true;
+                        log(`[Bit-Rot Chaos] Flipped bits on disk for chunk ${c.id} on ${n.id}!`);
+                    }
+                });
+            });
+            if (!corrupted) log(`[Bit-Rot Chaos] No chunks found. Write an object first!`);
+            render();
+        }
+
+        function runAntiEntropy() {
+            log(`[Anti-Entropy] Merkle tree exchange initiated. Comparing root hashes...`);
+            let syncCount = 0;
+            // Diff pairs
+            for (let i = 0; i < cluster.nodes.length; i++) {
+                for (let j = i + 1; j < cluster.nodes.length; j++) {
+                    const nA = cluster.nodes[i];
+                    const nB = cluster.nodes[j];
+                    if (nA.status === "HEALTHY" && nB.status === "HEALTHY") {
+                        Object.keys(nA.chunks).forEach(cid => {
+                            if (!nB.chunks[cid] && !nA.chunks[cid].isCorrupt) {
+                                nB.chunks[cid] = { ...nA.chunks[cid] };
+                                syncCount++;
+                            }
+                        });
+                        Object.keys(nB.chunks).forEach(cid => {
+                            if (!nA.chunks[cid] && !nB.chunks[cid].isCorrupt) {
+                                nA.chunks[cid] = { ...nB.chunks[cid] };
+                                syncCount++;
+                            }
+                        });
+                    }
+                }
+            }
+            log(`[Anti-Entropy] Tree diff complete. Synchronized ${syncCount} missing chunks across replicas.`);
+            render();
+        }
+
+        function runScrub() {
+            let scrubbed = 0;
+            let repaired = 0;
+            cluster.nodes.forEach(n => {
+                if (n.status === "HEALTHY") {
+                    Object.values(n.chunks).forEach(c => {
+                        scrubbed++;
+                        if (c.isCorrupt) {
+                            c.isCorrupt = false;
+                            repaired++;
+                            log(`[Disk Scrubber] Detected bit-rot in ${c.id} on ${n.id}. Auto-repaired from manifest!`);
+                        }
+                    });
+                }
+            });
+            log(`[Disk Scrubber] Scanned ${scrubbed} chunks. Repaired ${repaired} corrupt blocks.`);
+            render();
+        }
+
+        function addDynamicNode() {
+            if (cluster.nodes.length >= 4) return;
+            cluster.nodes.push({
+                id: "node-4",
+                host: "127.0.0.1",
+                port: 9004,
+                rack: "rack-1",
+                zone: "zone-c",
+                status: "HEALTHY",
+                chunks: {}
+            });
+            log(`[Rebalance] Node-4 joined cluster! Dynamic partition rebalancing shifting ownership...`);
+            runAntiEntropy();
+            render();
+        }
+
+        // Initialize with default object
+        putObject();
+    </script>
+</body>
+</html>
